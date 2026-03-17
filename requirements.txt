@@ -1,0 +1,14 @@
+langchain
+langchain-google-genai
+langgraph
+python-dotenv
+twilio
+fastapi
+uvicorn
+langchain-chroma
+langchain-text-splitters
+langchain-community
+pypdf
+fpdf2
+aiosqlite
+tenacity

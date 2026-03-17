@@ -1,0 +1,4 @@
+Simulate a short voice call transcript with {name} for insurance renewal. 
+The goal is to ask if they want to renew their policy (Policy ID: {policy_id}) which expires on {renewal_date}.
+Keep the transcript concise and focused on the renewal confirmation.
+Output only the transcript.

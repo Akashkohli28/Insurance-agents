@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>InsuranceAI — Renewal Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg: #0a0f1e;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: rgba(255, 255, 255, 0.07);
+            --accent: #6366f1;
+            --accent2: #22d3ee;
+            --accent3: #a855f7;
+            --green: #10b981;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --text: #f1f5f9;
+            --muted: #64748b;
+            --radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: rgba(17, 24, 39, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .logo-text span {
+            color: var(--accent);
+        }
+
+        nav {
+            display: flex;
+            gap: 4px;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: var(--muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        nav button.active,
+        nav button:hover {
+            background: var(--surface2);
+            color: var(--text);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.4;
+            }
+        }
+
+        .status-label {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* Page sections */
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.email::before {
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+        }
+
+        .stat-card.whatsapp::before {
+            background: linear-gradient(90deg, var(--green), var(--accent2));
+        }
+
+        .stat-card.voice::before {
+            background: linear-gradient(90deg, var(--yellow), #f97316);
+        }
+
+        .stat-card.escalated::before {
+            background: linear-gradient(90deg, var(--red), #ec4899);
+        }
+
+        .stat-icon {
+            font-size: 28px;
+            margin-bottom: 16px;
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .stat-icon.email {
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .stat-icon.whatsapp {
+            background: rgba(16, 185, 129, 0.15);
+        }
+
+        .stat-icon.voice {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .stat-icon.escalated {
+            background: rgba(239, 68, 68, 0.15);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        /* Table */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .refresh-btn {
+            background: var(--accent);
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .refresh-btn:hover {
+            opacity: 0.85;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead tr {
+            background: var(--surface2);
+        }
+
+        th {
+            text-align: left;
+            padding: 12px 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-pending {
+            background: rgba(100, 116, 139, 0.2);
+            color: #94a3b8;
+        }
+
+        .badge-email {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .badge-whatsapp {
+            background: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        .badge-voice {
+            background: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        .badge-escalated {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .trigger-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            border: none;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .trigger-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .trigger-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Chat page */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+            height: calc(100vh - 160px);
+        }
+
+        .chat-sidebar {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .policy-section {
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s;
+        }
+
+        .policy-section:hover {
+            border-color: var(--accent);
+        }
+
+        .policy-section-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .policy-section-desc {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .chat-main {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .ai-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .ai-info p {
+            font-size: 12px;
+            color: var(--green);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            max-width: 75%;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .ai-msg-avatar {
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+        }
+
+        .user-msg-avatar {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 14px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .message.ai .message-bubble {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-top-left-radius: 4px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            border-top-right-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            resize: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent);
+        }
+
+        .chat-input::placeholder {
+            color: var(--muted);
+        }
+
+        .send-btn {
+            background: linear-gradient(135deg, var(--accent), var(--accent3));
+            border: none;
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: opacity 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Page title */
+        .page-title {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 4px 0;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+
+            30% {
+                opacity: 1;
+                transform: scale(1.3);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-sidebar {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">
+            <div class="logo-icon">🛡️</div>
+            <div class="logo-text">Insurance<span>AI</span></div>
+        </div>
+        <nav>
+            <button class="active" onclick="showPage('dashboard', this)">📊 Dashboard</button>
+            <button onclick="showPage('policyholders', this)">👥 Policyholders</button>
+            <button onclick="showPage('chat', this)">💬 Policy Chat</button>
+        </nav>
+        <div class="header-right">
+            <div class="status-dot"></div>
+            <span class="status-label">API Connected</span>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard" class="page active">
+            <h1 class="page-title">Renewal Dashboard</h1>
+            <p class="page-subtitle">Real-time overview of your insurance renewal automation.</p>
+
+            <div class="stats-grid">
+                <div class="stat-card email">
+                    <div class="stat-icon email">📧</div>
+                    <div class="stat-number" id="stat-email">0</div>
+                    <div class="stat-label">Emails Sent</div>
+                </div>
+                <div class="stat-card whatsapp">
+                    <div class="stat-icon whatsapp">💬</div>
+                    <div class="stat-number" id="stat-whatsapp">0</div>
+                    <div class="stat-label">WhatsApp Sent</div>
+                </div>
+                <div class="stat-card voice">
+                    <div class="stat-icon voice">📞</div>
+                    <div class="stat-number" id="stat-voice">0</div>
+                    <div class="stat-label">Voice Calls Made</div>
+                </div>
+                <div class="stat-card escalated">
+                    <div class="stat-icon escalated">🚨</div>
+                    <div class="stat-number" id="stat-escalated">0</div>
+                    <div class="stat-label">Escalated</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">Communication Channels Breakdown</div>
+                    <canvas id="donutChart" height="200"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">Renewal Status Overview</div>
+                    <canvas id="barChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- POLICYHOLDERS PAGE -->
+        <div id="policyholders" class="page">
+            <h1 class="page-title">Policyholders</h1>
+            <p class="page-subtitle">Manage and trigger renewal flows for each policyholder.</p>
+
+            <div class="table-card">
+                <div class="table-header">
+                    <span class="table-title">All Policyholders</span>
+                    <button class="refresh-btn" onclick="loadPolicyholders()">↻ Refresh</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Policy ID</th>
+                            <th>Days Left</th>
+                            <th>Channel</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ph-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align:center; color:var(--muted); padding:32px;">Loading...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CHAT PAGE -->
+        <div id="chat" class="page">
+            <div class="chat-layout">
+                <div class="chat-sidebar">
+                    <div class="sidebar-title">Policy Topics</div>
+                    <div class="policy-section" onclick="sendQuickQuestion('What does Coverage overview include?')">
+                        <div class="policy-section-title">📋 Coverage Overview</div>
+                        <div class="policy-section-desc">Learn what's covered in your policy</div>
+                    </div>
+                    <div class="policy-section" onclick="sendQuickQuestion('How does the renewal process work?')">
+                        <div class="policy-section-title">🔄 Renewal Process</div>
+                        <div class="policy-section-desc">Email, WhatsApp, and Voice channels</div>
+                    </div>
+                    <div class="policy-section" onclick="sendQuickQuestion('What are the premium payment rules?')">
+                        <div class="policy-section-title">💳 Premium Payments</div>
+                        <div class="policy-section-desc">Payment terms and grace periods</div>
+                    </div>
+                    <div class="policy-section" onclick="sendQuickQuestion('How do I file a claim?')">
+                        <div class="policy-section-title">📑 Claims Process</div>
+                        <div class="policy-section-desc">Steps to report and submit a claim</div>
+                    </div>
+                    <div class="policy-section" onclick="sendQuickQuestion('What are the contact details?')">
+                        <div class="policy-section-title">📞 Contact Info</div>
+                        <div class="policy-section-desc">Reach our support team</div>
+                    </div>
+                </div>
+
+                <div class="chat-main">
+                    <div class="chat-header">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="ai-info">
+                            <h3>Policy Assistant</h3>
+                            <p>● Online — Ask me anything about your policy</p>
+                        </div>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="message ai">
+                            <div class="message-avatar ai-msg-avatar">🤖</div>
+                            <div class="message-bubble">
+                                Hello! 👋 I'm your <strong>InsuranceAI Policy Assistant</strong>. I can answer any
+                                questions about your coverage, renewal process, claims, and more. How can I help you
+                                today?
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask about your policy..."
+                            onkeydown="handleChatKey(event)"></textarea>
+                        <button class="send-btn" id="send-btn" onclick="sendMessage()">➤</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = window.location.origin;
+
+        // Page navigation
+        function showPage(name, btn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(name).classList.add('active');
+            btn.classList.add('active');
+
+            if (name === 'policyholders') loadPolicyholders();
+        }
+
+        // ===== DASHBOARD =====
+        async function loadStats() {
+            try {
+                const res = await fetch(`${API}/dashboard/stats`);
+                const data = await res.json();
+                document.getElementById('stat-email').textContent = data.EMAIL_SENT || 0;
+                document.getElementById('stat-whatsapp').textContent = data.WHATSAPP_SENT || 0;
+                document.getElementById('stat-voice').textContent = data.VOICE_CALL_MADE || 0;
+                document.getElementById('stat-escalated').textContent = data.ESCALATED || 0;
+                renderCharts(data);
+            } catch (e) {
+                console.error('Stats load error:', e);
+            }
+        }
+
+        let donutChart, barChart;
+        function renderCharts(data) {
+            const labels = ['Email Sent', 'WhatsApp Sent', 'Voice Called', 'Escalated', 'Pending'];
+            const values = [data.EMAIL_SENT || 0, data.WHATSAPP_SENT || 0, data.VOICE_CALL_MADE || 0, data.ESCALATED || 0, data.PENDING || 0];
+            const colors = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#64748b'];
+
+            if (donutChart) donutChart.destroy();
+            donutChart = new Chart(document.getElementById('donutChart'), {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 8 }] },
+                options: {
+                    responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Inter' } } } },
+                    cutout: '65%'
+                }
+            });
+
+            if (barChart) barChart.destroy();
+            barChart = new Chart(document.getElementById('barChart'), {
+                type: 'bar',
+                data: { labels, datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false }] },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
+                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8', stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        // ===== POLICYHOLDERS =====
+        async function loadPolicyholders() {
+            const tbody = document.getElementById('ph-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--muted); padding:32px;"><span class="spinner"></span> Loading...</td></tr>';
+            try {
+                const res = await fetch(`${API}/policyholders`);
+                const { policyholders } = await res.json();
+                tbody.innerHTML = policyholders.map(ph => `
+        <tr>
+          <td><strong>${ph.name}</strong><br><span style="font-size:12px;color:var(--muted)">${ph.email}</span></td>
+          <td>${ph.policy_id}</td>
+          <td>
+            <span style="color:${ph.days_remaining <= 3 ? '#ef4444' : ph.days_remaining <= 7 ? '#f59e0b' : '#10b981'}; font-weight:600;">
+              ${ph.days_remaining}d
+            </span>
+          </td>
+          <td>${ph.preferred_channel}</td>
+          <td>${statusBadge(ph.renewal_status)}</td>
+          <td>
+            <button class="trigger-btn" id="btn-${ph.id}" onclick="triggerRenewal('${ph.id}')">▶ Trigger</button>
+          </td>
+        </tr>
+      `).join('');
+            } catch (e) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#ef4444; padding:32px;">Failed to load policyholders</td></tr>';
+            }
+        }
+
+        function statusBadge(status) {
+            const map = {
+                'PENDING': 'badge-pending',
+                'EMAIL_SENT': 'badge-email',
+                'WHATSAPP_SENT': 'badge-whatsapp',
+                'VOICE_CALL_MADE': 'badge-voice',
+                'ESCALATED': 'badge-escalated'
+            };
+            const cls = map[status] || 'badge-pending';
+            const icon = { 'PENDING': '⏳', 'EMAIL_SENT': '📧', 'WHATSAPP_SENT': '💬', 'VOICE_CALL_MADE': '📞', 'ESCALATED': '🚨' };
+            return `<span class="badge ${cls}">${icon[status] || '•'} ${status.replace('_', ' ')}</span>`;
+        }
+
+        async function triggerRenewal(phId) {
+            const btn = document.getElementById(`btn-${phId}`);
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>';
+            try {
+                const res = await fetch(`${API}/renew/${phId}`, { method: 'POST' });
+                if (res.ok) {
+                    await loadPolicyholders();
+                    await loadStats();
+                }
+            } catch (e) { alert('Renewal failed: ' + e.message); }
+            finally { if (btn) { btn.disabled = false; btn.innerHTML = '▶ Trigger'; } }
+        }
+
+        // ===== CHATBOT =====
+        function handleChatKey(e) {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        }
+
+        function sendQuickQuestion(q) {
+            document.getElementById('chat-input').value = q;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+
+            const messages = document.getElementById('chat-messages');
+            // Add user message
+            messages.innerHTML += `
+      <div class="message user">
+        <div class="message-avatar user-msg-avatar">👤</div>
+        <div class="message-bubble">${escapeHtml(msg)}</div>
+      </div>`;
+
+            // Add typing indicator
+            const typingId = 'typing-' + Date.now();
+            messages.innerHTML += `
+      <div class="message ai" id="${typingId}">
+        <div class="message-avatar ai-msg-avatar">🤖</div>
+        <div class="message-bubble">
+          <div class="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>
+        </div>
+      </div>`;
+            messages.scrollTop = messages.scrollHeight;
+
+            document.getElementById('send-btn').disabled = true;
+            try {
+                const res = await fetch(`${API}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await res.json();
+                document.getElementById(typingId).remove();
+                messages.innerHTML += `
+        <div class="message ai">
+          <div class="message-avatar ai-msg-avatar">🤖</div>
+          <div class="message-bubble">${formatMarkdown(data.reply)}</div>
+        </div>`;
+                messages.scrollTop = messages.scrollHeight;
+            } catch (e) {
+                document.getElementById(typingId).remove();
+                messages.innerHTML += `<div class="message ai"><div class="message-avatar ai-msg-avatar">🤖</div><div class="message-bubble" style="color:#ef4444;">Sorry, I'm having trouble connecting. Please try again.</div></div>`;
+            } finally {
+                document.getElementById('send-btn').disabled = false;
+                messages.scrollTop = messages.scrollHeight;
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function formatMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/`(.*?)`/g, '<code style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px;">$1</code>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // Init
+        loadStats();
+        setInterval(loadStats, 60000); // auto-refresh every 60s
+    </script>
+</body>
+
+</html>

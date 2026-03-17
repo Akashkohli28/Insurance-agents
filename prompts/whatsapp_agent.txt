@@ -1,0 +1,4 @@
+Write a professional and friendly WhatsApp insurance renewal message for {name} (Policy: {policy_id}, Renewal Date: {renewal_date}). 
+Keep it concise as it is for WhatsApp. 
+Include an emoji to make it friendly but maintain a professional tone.
+Mention that their policy is up for renewal soon.

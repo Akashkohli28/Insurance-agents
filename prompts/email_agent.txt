@@ -1,0 +1,4 @@
+Write a professional insurance renewal email for {name} (Policy: {policy_id}, Renewal Date: {renewal_date}).
+The tone should be professional, clear, and encouraging. 
+Include the policy ID and the renewal date clearly.
+Do not mention specific pricing or discounts unless provided.
